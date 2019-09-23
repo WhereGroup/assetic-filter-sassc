@@ -1,0 +1,15 @@
+{
+  "name": "wheregroup/assetic-filter-sassc",
+  "description": "Assetic filter wrapper for sassc",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "kriswallsmith/assetic": "^1.4"
+  },
+  "suggest": {
+    "wheregroup/sassc-binaries": "Precompiled sassc binaries for various platforms"
+  },
+  "autoload": {
+    "psr-4": { "Wheregroup\\AsseticFilterSassc\\": "lib" }
+  }
+}
