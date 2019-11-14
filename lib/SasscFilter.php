@@ -8,9 +8,14 @@ use Assetic\Filter\Sass\ScssFilter;
 
 class SasscFilter extends ScssFilter
 {
+    private $initializing;
+
     public function __construct($sasscPath = '/usr/bin/sassc')
     {
+        $this->initializing = true;
         parent::__construct($sasscPath, null);
+        $this->initializing = false;
+
         // prevent parent's automatic --scss option addition based on file extension
         $this->setScss(false);
         // undo parent constructor's initialization for unsupported --cache-location option
@@ -19,6 +24,9 @@ class SasscFilter extends ScssFilter
 
     public function setScss($scss)
     {
+        if ($this->initializing) {
+            return;
+        }
         if ($scss) {
             throw new \InvalidArgumentException("Implementation does not support --scss switch");
         }
