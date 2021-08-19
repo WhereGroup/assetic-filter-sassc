@@ -4,41 +4,99 @@
 namespace Wheregroup\AsseticFilterSassc;
 
 
-use Assetic\Filter\Sass\ScssFilter;
+use Assetic\Contracts\Asset\AssetInterface;
+use Assetic\Exception\FilterException;
+use Assetic\Filter\FilterInterface;
+use Assetic\Util\FilesystemUtils;
+use Symfony\Component\Process\Process;
 
-class SasscFilter extends ScssFilter
+/**
+ * Self-contained replacement for ScssFilter hierarchy
+ * no longer present in replacement package
+ * assetic/framework.
+ *
+ * Works with both original kriswallsmith/assetic 1.4.0 and
+ * assetic/framework 1.4 or 2.0.x.
+ *
+ * Contents based on original kriswallsmith/assetic code copyright
+ * 2010-2015 OpenSky Project Inc
+ *
+ * @see https://github.com/kriswallsmith/assetic/blob/master/LICENSE
+ * @see https://github.com/kriswallsmith/assetic/blob/v1.4.0/src/Assetic/Filter/Sass/BaseSassFilter.php
+ * @see https://github.com/kriswallsmith/assetic/blob/master/src/Assetic/Filter/BaseProcessFilter.php
+ */
+class SasscFilter implements FilterInterface
 {
-    private $initializing;
+    protected $loadPaths = array();
+    protected $binaryPath;
+    protected $timeout;
+    protected $style = 'nested';
 
-    public function __construct($sasscPath = '/usr/bin/sassc')
+    public function __construct($binaryPath = '')
     {
-        $this->initializing = true;
-        parent::__construct($sasscPath, null);
-        $this->initializing = false;
+        $this->binaryPath = $binaryPath;
+    }
 
-        // prevent parent's automatic --scss option addition based on file extension
-        $this->setScss(false);
-        // undo parent constructor's initialization for unsupported --cache-location option
-        $this->setCacheLocation(null);
+    public function setLoadPaths(array $loadPaths)
+    {
+        $this->loadPaths = $loadPaths;
+    }
+
+    public function addLoadPath($loadPath)
+    {
+        $this->loadPaths[] = $loadPath;
+    }
+
+    public function setTimeout($timeout)
+    {
+        $this->timeout = $timeout;
+    }
+
+    public function setStyle($style)
+    {
+        $this->style = $style;
+    }
+
+    public function filterLoad(AssetInterface $asset)
+    {
+        $processArgs = array($this->binaryPath);
+        if ($this->style) {
+            $processArgs[] = '--style';
+            $processArgs[] = $this->style;
+        }
+        if ($srcDir = $asset->getSourceDirectory()) {
+            $processArgs[] = '--load-path';
+            $processArgs[] = $srcDir;
+        }
+        foreach ($this->loadPaths as $loadPath) {
+            $processArgs[] = '--load-path';
+            $processArgs[] = $loadPath;
+        }
+        $inputFile = FilesystemUtils::createTemporaryFile('sass');
+        \file_put_contents($inputFile, $asset->getContent());
+        $processArgs[] = $inputFile;
+        $process = new Process($processArgs);
+        if ($this->timeout !== null) {
+            $process->setTimeout($this->timeout);
+        }
+        $exitCode = $process->run();
+        \unlink($inputFile);
+        if ($exitCode) {
+            throw FilterException::fromProcess($process);
+        }
+        $asset->setContent($process->getOutput());
+    }
+
+    public function filterDump(AssetInterface $asset)
+    {
+        // Nothing
     }
 
     public function setScss($scss)
     {
-        if ($this->initializing) {
-            return;
-        }
         if ($scss) {
             throw new \InvalidArgumentException("Implementation does not support --scss switch");
         }
-        parent::setScss(false);
-    }
-
-    public function setNoCache($noCache)
-    {
-        if ($noCache) {
-            throw new \InvalidArgumentException("Implementation does not support --no-cache switch");
-        }
-        parent::setNoCache(false);
     }
 
     public function setCacheLocation($cacheLocation)
@@ -46,6 +104,5 @@ class SasscFilter extends ScssFilter
         if ($cacheLocation) {
             throw new \InvalidArgumentException("Implementation does not support --cache-location switch");
         }
-        parent::setCacheLocation(null);
     }
 }
