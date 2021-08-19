@@ -4,7 +4,8 @@
   "type": "library",
   "license": "MIT",
   "require": {
-    "kriswallsmith/assetic": "^1.2"
+    "kriswallsmith/assetic": "^1.2",
+    "symfony/process": "^2.8 || ^3 || ^4 || ^5"
   },
   "suggest": {
     "wheregroup/sassc-binaries": "Precompiled sassc binaries for various platforms"
