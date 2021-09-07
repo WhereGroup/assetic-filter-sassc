@@ -1,3 +1,6 @@
+## 0.0.4
+* Drop support for original kriswallsmith/assetic
+
 ## 0.0.3
 * Fix error when installing along original kriswallsmith/assetic
 
