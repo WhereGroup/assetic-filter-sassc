@@ -4,7 +4,7 @@
 namespace Wheregroup\AsseticFilterSassc;
 
 
-use Assetic\Contracts\Asset\AssetInterface;
+use Assetic\Asset\AssetInterface;
 use Assetic\Exception\FilterException;
 use Assetic\Filter\FilterInterface;
 use Assetic\Util\FilesystemUtils;
