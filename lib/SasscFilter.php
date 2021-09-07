@@ -4,9 +4,9 @@
 namespace Wheregroup\AsseticFilterSassc;
 
 
-use Assetic\Asset\AssetInterface;
+use Assetic\Contracts\Asset\AssetInterface;
+use Assetic\Contracts\Filter\FilterInterface;
 use Assetic\Exception\FilterException;
-use Assetic\Filter\FilterInterface;
 use Assetic\Util\FilesystemUtils;
 use Symfony\Component\Process\Process;
 
