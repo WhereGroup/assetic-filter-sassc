@@ -1,3 +1,6 @@
+## 0.0.5
+* Prefer stdin compilation input (skip temp file) unless running on windows
+
 ## 0.0.4
 * Drop support for original kriswallsmith/assetic
 
