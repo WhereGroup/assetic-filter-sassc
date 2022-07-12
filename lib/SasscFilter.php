@@ -72,15 +72,25 @@ class SasscFilter implements FilterInterface
             $processArgs[] = '--load-path';
             $processArgs[] = $loadPath;
         }
-        $inputFile = FilesystemUtils::createTemporaryFile('sass');
-        \file_put_contents($inputFile, $asset->getContent());
-        $processArgs[] = $inputFile;
+        if (DIRECTORY_SEPARATOR === '\\') {
+            $inputFile = FilesystemUtils::createTemporaryFile('sass');
+            \file_put_contents($inputFile, $asset->getContent());
+            $processArgs[] = $inputFile;
+        } else {
+            $inputFile = false;
+            $processArgs[] = '--stdin';
+        }
         $process = new Process($processArgs);
+        if (!$inputFile) {
+            $process->setInput($asset->getContent());
+        }
         if ($this->timeout !== null) {
             $process->setTimeout($this->timeout);
         }
         $exitCode = $process->run();
-        \unlink($inputFile);
+        if ($inputFile) {
+            \unlink($inputFile);
+        }
         if ($exitCode) {
             throw FilterException::fromProcess($process);
         }
